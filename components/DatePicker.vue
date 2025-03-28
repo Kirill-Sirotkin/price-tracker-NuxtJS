@@ -1,6 +1,7 @@
 <template>
     <div class="flex flex-col gap-2">
         <URadioGroup 
+            :disabled="isFetching"
             orientation="horizontal" 
             default-value="Day"
             @change="calculatePeriod"
@@ -12,13 +13,14 @@
             <input class="border-1 border-amber-50" type="date" v-model="startDateInput" />
             <p class="font-bold">To:</p>
             <input class="border-1 border-amber-50" type="date" v-model="endDateInput" />
-            <UButton class="rounded-full" @click="validateAndEmitCustomPeriod">Apply</UButton>
+            <UButton :disabled="isFetching" class="rounded-full" @click="validateAndEmitCustomPeriod">Apply</UButton>
         </div>
     </div>
 </template>
 <script setup lang="ts">
 import type { RadioGroupItem } from '@nuxt/ui'
 
+const props = defineProps<{ isFetching: boolean }>()
 const emit = defineEmits(['pricePeriodChange'])
 
 const calculatePeriod = () => {

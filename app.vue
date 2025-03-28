@@ -2,7 +2,7 @@
   <UContainer class="py-8 flex flex-col gap-4">
     <h1 class="text-3xl">BITCOIN CLOSING PRICE TRACKER</h1>
     <ChartContainer :chart-period-data="periodData" />
-    <DatePicker @pricePeriodChange="updatePricePeriod" class="pl-10" />
+    <DatePicker :is-fetching="status !== 'success'" @pricePeriodChange="updatePricePeriod" class="pl-10" />
   </UContainer>
 </template>
 <script setup lang="ts">
@@ -10,13 +10,24 @@
   import type { PeriodData, PeriodDataFull } from './models/PeriodData'
   import type { Price } from "@prisma/client";
   import { format } from "date-fns";
-  import type { FetchResult } from './models/FetchData';
 
+  const periodData = ref<PeriodDataFull>({ 
+    periodType: 'Day', 
+    period: [new Date(), new Date()],
+    pricesArray: [],
+    datesArray: []
+  })
   const timestamp = ref((new Date()).getTime())
   const days = ref(24)
   const unit = ref("hours")
-  const { data, refresh } = await useFetch<FetchResult>("/api/price", {
-    query: { timestamp, days, unit }
+  const { data, refresh, status } = await useFetch<Price[]>("/api/price", {
+    query: { timestamp, days, unit },
+    server: false
+  })
+
+  const fetchStatus = computed(() => {return status.value})
+  watch(fetchStatus, (value, oldValue) => {
+    if (value === 'success') updatePeriodData()
   })
 
   const updatePricePeriod = async (newData: PeriodData) => {
@@ -42,20 +53,33 @@
     }
     await refresh()
     if (!data.value) return
-    data.value.Data.forEach((element) => {
+    data.value.forEach((element) => {
       if (periodDataFull.periodType === 'Day') {
-        periodDataFull.datesArray.push(format(element.TIMESTAMP * 1000, 'yyyy-MM-dd HH:mm'))
+        periodDataFull.datesArray.push(format((new Date(element.date)).getTime(), 'yyyy-MM-dd HH:mm'))
       } else {        
-        periodDataFull.datesArray.push(format(element.TIMESTAMP * 1000, 'yyyy-MM-dd'))
+        periodDataFull.datesArray.push(format((new Date(element.date)).getTime(), 'yyyy-MM-dd'))
       }
-      periodDataFull.pricesArray.push(element.CLOSE)
+      periodDataFull.pricesArray.push(element.price)
     })
     periodData.value = periodDataFull
   } 
-  const periodData = ref<PeriodDataFull>({ 
-    periodType: 'Day', 
-    period: [new Date(), new Date()],
-    pricesArray: [],
-    datesArray: []
-  })
+
+  const updatePeriodData = () => {
+    const periodDataFull: PeriodDataFull = {
+      period: [new Date(), new Date()],
+      datesArray: [],
+      pricesArray: [],
+      periodType: 'Day'
+    }
+    if (!data.value) {console.log("no data"); return}
+    data.value.forEach((element) => {
+      if (periodDataFull.periodType === 'Day') {
+        periodDataFull.datesArray.push(format((new Date(element.date)).getTime(), 'yyyy-MM-dd HH:mm'))
+      } else {        
+        periodDataFull.datesArray.push(format((new Date(element.date)).getTime(), 'yyyy-MM-dd'))
+      }
+      periodDataFull.pricesArray.push(element.price)
+    })
+    periodData.value = periodDataFull
+  }
 </script>
