@@ -1,7 +1,6 @@
-version: "3.8"
-
+version: '3.8'
 services:
-  app:
+  nuxt-app:
     build: .
     container_name: nuxt_app
     restart: unless-stopped
@@ -10,7 +9,9 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - ./dev.db:/app/dev.db
+      - /app/.nuxt
     environment:
-      - NODE_ENV=production
-    command: ["npm", "run", "preview"]
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - HOST=0.0.0.0
+      - PORT=3000
+    command: npm run dev
