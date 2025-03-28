@@ -1,6 +1,22 @@
-# Nuxt Minimal Starter
+# Bitcoin Price Tracker
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+[ReadMe на русском](README_ru.md)
+
+## Description
+
+This projects aims to provide a simple website app to display historical Bitcoin price in USD.
+
+## Features
+
+- Intuitive UI
+- Price time-series data display on a graph
+- Preset time periods as well as custom time period input
+
+## Technical features
+
+- Uses Coindesk API to fetch Bitcoin price
+- Prices are only fetched if prices for selected dates do not exist in the database
+- Docker compose available
 
 ## Setup
 
